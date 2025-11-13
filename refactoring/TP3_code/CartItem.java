@@ -1,38 +1,60 @@
+/**
+ * Représente un item dans le panier (peut être un item simple ou un trio)
+ */
 public class CartItem {
-    public Item item;
-    public boolean isTrio;
-    public Item trioSnack;  // Si c'est un trio
-    public Item trioDrink;  // Si c'est un trio
+    private Item item;
+    private boolean isTrio;
+    private Item trioSnack;  // Si c'est un trio
+    private Item trioDrink;  // Si c'est un trio
     
     // Pour un item simple
-    public CartItem(Item i) {
-        item = i;
-        isTrio = false;
+    public CartItem(Item item) {
+        this.item = item;
+        this.isTrio = false;
+        this.trioSnack = null;
+        this.trioDrink = null;
     }
     
     // Pour un trio
     public CartItem(Item main, Item snack, Item drink) {
-        item = main;
-        trioSnack = snack;
-        trioDrink = drink;
-        isTrio = true;
+        this.item = main;
+        this.trioSnack = snack;
+        this.trioDrink = drink;
+        this.isTrio = true;
+    }
+    
+    public Item getItem() {
+        return item;
+    }
+    
+    public boolean isTrio() {
+        return isTrio;
+    }
+    
+    public Item getTrioSnack() {
+        return trioSnack;
+    }
+    
+    public Item getTrioDrink() {
+        return trioDrink;
     }
     
     // Calculer le prix
     public double getPrice() {
         if (isTrio) {
-            double total = item.price + trioSnack.price + trioDrink.price;
+            double total = item.getPrice() + trioSnack.getPrice() + trioDrink.getPrice();
             return Math.round(total * 0.85 * 100.0) / 100.0; // 15% rabais, arrondi à 2 décimales
         } else {
-            return Math.round(item.price * 100.0) / 100.0;
+            return Math.round(item.getPrice() * 100.0) / 100.0;
         }
     }
     
     public String getDescription() {
         if (isTrio) {
-            return "TRIO: " + item.name + " + " + trioSnack.name + " + " + trioDrink.name + " (15% rabais)";
+            return "TRIO: " + item.getName() + " + " + trioSnack.getName() + 
+                   " + " + trioDrink.getName() + " (15% rabais)";
         } else {
-            return item.name;
+            return item.getName();
         }
     }
 }
