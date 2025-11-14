@@ -34,21 +34,26 @@ public class McDonaldSystem {
         boolean isRunning = true;
         
         while (isRunning) {
-            menuDisplay.displayMainMenu();
-            int userChoice = inputHandler.readInt();
-            
-            switch (userChoice) {
-                case 1:
-                    handleClientMode();
-                    break;
-                case 2:
-                    handleInventoryMode();
-                    break;
-                case 3:
-                    isRunning = false;
-                    break;
-                default:
-                    System.out.println("Choix invalide. Veuillez réessayer.");
+            try {
+                menuDisplay.displayMainMenu();
+                int userChoice = inputHandler.readInt();
+                
+                switch (userChoice) {
+                    case 1:
+                        handleClientMode();
+                        break;
+                    case 2:
+                        handleInventoryMode();
+                        break;
+                    case 3:
+                        isRunning = false;
+                        break;
+                    default:
+                        System.out.println("Choix invalide. Veuillez réessayer.");
+                }
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
+                System.out.println("Veuillez réessayer.");
             }
         }
         
@@ -56,42 +61,52 @@ public class McDonaldSystem {
     }
     
     private void handleClientMode() {
-        String clientName = inputHandler.readStringWithPrompt("Nom: ");
-        System.out.println("Bienvenue " + clientName);
-        
-        shoppingCart.clear();
-        
-        boolean isInClientMode = true;
-        while (isInClientMode) {
-            menuDisplay.displayClientMenu();
-            int clientChoice = inputHandler.readInt();
+        try {
+            String clientName = inputHandler.readStringWithPrompt("Nom: ");
+            System.out.println("Bienvenue " + clientName);
             
-            switch (clientChoice) {
-                case 1:
-                    displayMenu();
-                    break;
-                case 2:
-                    addTrioToCart();
-                    break;
-                case 3:
-                    addItemToCart();
-                    break;
-                case 4:
-                    displayCart();
-                    break;
-                case 5:
-                    removeItemFromCart();
-                    break;
-                case 6:
-                    processOrder();
-                    break;
-                case 7:
-                    isInClientMode = false;
-                    shoppingCart.clear();
-                    break;
-                default:
-                    System.out.println("Choix invalide. Veuillez réessayer.");
+            shoppingCart.clear();
+            
+            boolean isInClientMode = true;
+            while (isInClientMode) {
+                try {
+                    menuDisplay.displayClientMenu();
+                    int clientChoice = inputHandler.readInt();
+                    
+                    switch (clientChoice) {
+                        case 1:
+                            displayMenu();
+                            break;
+                        case 2:
+                            addTrioToCart();
+                            break;
+                        case 3:
+                            addItemToCart();
+                            break;
+                        case 4:
+                            displayCart();
+                            break;
+                        case 5:
+                            removeItemFromCart();
+                            break;
+                        case 6:
+                            processOrder();
+                            break;
+                        case 7:
+                            isInClientMode = false;
+                            shoppingCart.clear();
+                            break;
+                        default:
+                            System.out.println("Choix invalide. Veuillez réessayer.");
+                    }
+                } catch (IllegalArgumentException e) {
+                    System.out.println(e.getMessage());
+                    System.out.println("Veuillez réessayer.");
+                }
             }
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+            System.out.println("Retour au menu principal.");
         }
     }
     
@@ -101,33 +116,42 @@ public class McDonaldSystem {
     }
     
     private void addTrioToCart() {
-        ArrayList<Item> mainDishes = inventoryManager.getItemsByType("main");
-        ArrayList<Item> snacks = inventoryManager.getItemsByType("snack");
-        ArrayList<Item> drinks = inventoryManager.getItemsByType("drink");
-        
-        menuDisplay.displayItemsByCategory("Plats principaux", mainDishes);
-        int mainChoice = inputHandler.readIntWithPrompt("Choix: ") - 1;
-        
-        menuDisplay.displayItemsByCategory("Accompagnements", snacks);
-        int snackChoice = inputHandler.readIntWithPrompt("Choix: ") - 1;
-        
-        menuDisplay.displayItemsByCategory("Boissons", drinks);
-        int drinkChoice = inputHandler.readIntWithPrompt("Choix: ") - 1;
-        
-        if (isValidTrioSelection(mainDishes, snacks, drinks, mainChoice, snackChoice, drinkChoice)) {
-            Item selectedMain = mainDishes.get(mainChoice);
-            Item selectedSnack = snacks.get(snackChoice);
-            Item selectedDrink = drinks.get(drinkChoice);
+        try {
+            ArrayList<Item> mainDishes = inventoryManager.getItemsByType("main");
+            ArrayList<Item> snacks = inventoryManager.getItemsByType("snack");
+            ArrayList<Item> drinks = inventoryManager.getItemsByType("drink");
             
-            if (inventoryManager.hasStockForTrio(selectedMain, selectedSnack, selectedDrink)) {
-                CartItem trio = new CartItem(selectedMain, selectedSnack, selectedDrink);
-                shoppingCart.addItem(trio);
-                System.out.println("✓ Trio ajouté au panier!");
-            } else {
-                System.out.println("ERREUR: Stock insuffisant pour ce trio!");
+            if (mainDishes.isEmpty() || snacks.isEmpty() || drinks.isEmpty()) {
+                System.out.println("ERREUR: Certaines catégories sont vides. Impossible de créer un trio.");
+                return;
             }
-        } else {
-            System.out.println("ERREUR: Choix invalide");
+            
+            menuDisplay.displayItemsByCategory("Plats principaux", mainDishes);
+            int mainChoice = inputHandler.readIntWithPrompt("Choix: ") - 1;
+            
+            menuDisplay.displayItemsByCategory("Accompagnements", snacks);
+            int snackChoice = inputHandler.readIntWithPrompt("Choix: ") - 1;
+            
+            menuDisplay.displayItemsByCategory("Boissons", drinks);
+            int drinkChoice = inputHandler.readIntWithPrompt("Choix: ") - 1;
+            
+            if (isValidTrioSelection(mainDishes, snacks, drinks, mainChoice, snackChoice, drinkChoice)) {
+                Item selectedMain = mainDishes.get(mainChoice);
+                Item selectedSnack = snacks.get(snackChoice);
+                Item selectedDrink = drinks.get(drinkChoice);
+                
+                if (inventoryManager.hasStockForTrio(selectedMain, selectedSnack, selectedDrink)) {
+                    CartItem trio = new CartItem(selectedMain, selectedSnack, selectedDrink);
+                    shoppingCart.addItem(trio);
+                    System.out.println("✓ Trio ajouté au panier!");
+                } else {
+                    System.out.println("ERREUR: Stock insuffisant pour ce trio!");
+                }
+            } else {
+                System.out.println("ERREUR: Choix invalide. Veuillez sélectionner un numéro valide.");
+            }
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
         }
     }
     
@@ -139,22 +163,30 @@ public class McDonaldSystem {
     }
     
     private void addItemToCart() {
-        ArrayList<Item> allItems = inventoryManager.getAllItems();
-        menuDisplay.displayMenu(allItems);
-        
-        int itemChoice = inputHandler.readIntWithPrompt("Choix: ") - 1;
-        Item selectedItem = inventoryManager.getItemByIndex(itemChoice);
-        
-        if (selectedItem != null) {
-            if (inventoryManager.hasStock(selectedItem)) {
-                CartItem cartItem = new CartItem(selectedItem);
-                shoppingCart.addItem(cartItem);
-                System.out.println("✓ " + selectedItem.getName() + " ajouté au panier!");
-            } else {
-                System.out.println("ERREUR: Plus de stock pour " + selectedItem.getName());
+        try {
+            ArrayList<Item> allItems = inventoryManager.getAllItems();
+            if (allItems.isEmpty()) {
+                System.out.println("ERREUR: L'inventaire est vide.");
+                return;
             }
-        } else {
-            System.out.println("ERREUR: Choix invalide");
+            
+            menuDisplay.displayMenu(allItems);
+            int itemChoice = inputHandler.readIntWithPrompt("Choix: ") - 1;
+            Item selectedItem = inventoryManager.getItemByIndex(itemChoice);
+            
+            if (selectedItem != null) {
+                if (inventoryManager.hasStock(selectedItem)) {
+                    CartItem cartItem = new CartItem(selectedItem);
+                    shoppingCart.addItem(cartItem);
+                    System.out.println("✓ " + selectedItem.getName() + " ajouté au panier!");
+                } else {
+                    System.out.println("ERREUR: Plus de stock pour " + selectedItem.getName());
+                }
+            } else {
+                System.out.println("ERREUR: Choix invalide. Veuillez sélectionner un numéro valide.");
+            }
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
         }
     }
     
@@ -166,15 +198,23 @@ public class McDonaldSystem {
         if (shoppingCart.isEmpty()) {
             System.out.println("\nPanier vide!");
         } else {
-            menuDisplay.displayCart(shoppingCart);
-            int removeChoice = inputHandler.readIntWithPrompt(
-                "\nNuméro de l'item à retirer (0 pour annuler): ");
-            
-            if (removeChoice > 0 && removeChoice <= shoppingCart.getSize()) {
-                CartItem removedItem = shoppingCart.removeItem(removeChoice - 1);
-                System.out.println("✓ " + removedItem.getDescription() + " retiré du panier!");
-            } else if (removeChoice != 0) {
-                System.out.println("ERREUR: Choix invalide");
+            try {
+                menuDisplay.displayCart(shoppingCart);
+                int removeChoice = inputHandler.readIntWithPrompt(
+                    "\nNuméro de l'item à retirer (0 pour annuler): ");
+                
+                if (removeChoice > 0 && removeChoice <= shoppingCart.getSize()) {
+                    CartItem removedItem = shoppingCart.removeItem(removeChoice - 1);
+                    if (removedItem != null) {
+                        System.out.println("✓ " + removedItem.getDescription() + " retiré du panier!");
+                    } else {
+                        System.out.println("ERREUR: Impossible de retirer l'item.");
+                    }
+                } else if (removeChoice != 0) {
+                    System.out.println("ERREUR: Choix invalide. Veuillez sélectionner un numéro valide.");
+                }
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
             }
         }
     }
@@ -200,27 +240,32 @@ public class McDonaldSystem {
         boolean isInInventoryMode = true;
         
         while (isInInventoryMode) {
-            menuDisplay.displayInventoryMenu();
-            int inventoryChoice = inputHandler.readInt();
-            
-            switch (inventoryChoice) {
-                case 1:
-                    displayInventory();
-                    break;
-                case 2:
-                    addStockToItem();
-                    break;
-                case 3:
-                    removeStockFromItem();
-                    break;
-                case 4:
-                    addNewItem();
-                    break;
-                case 5:
-                    isInInventoryMode = false;
-                    break;
-                default:
-                    System.out.println("Choix invalide. Veuillez réessayer.");
+            try {
+                menuDisplay.displayInventoryMenu();
+                int inventoryChoice = inputHandler.readInt();
+                
+                switch (inventoryChoice) {
+                    case 1:
+                        displayInventory();
+                        break;
+                    case 2:
+                        addStockToItem();
+                        break;
+                    case 3:
+                        removeStockFromItem();
+                        break;
+                    case 4:
+                        addNewItem();
+                        break;
+                    case 5:
+                        isInInventoryMode = false;
+                        break;
+                    default:
+                        System.out.println("Choix invalide. Veuillez réessayer.");
+                }
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
+                System.out.println("Veuillez réessayer.");
             }
         }
     }
@@ -231,51 +276,108 @@ public class McDonaldSystem {
     }
     
     private void addStockToItem() {
-        String itemName = inputHandler.readStringWithPrompt("Nom de l'item: ");
-        Item item = inventoryManager.findItemByName(itemName);
-        
-        if (item != null) {
-            int quantity = inputHandler.readIntWithPrompt("Quantité à ajouter: ");
-            inventoryManager.addStock(itemName, quantity);
-            System.out.println("Stock ajouté!");
-        } else {
-            System.out.println("Item non trouvé");
+        try {
+            String itemName = inputHandler.readStringWithPrompt("Nom de l'item: ");
+            if (itemName == null || itemName.trim().isEmpty()) {
+                System.out.println("ERREUR: Le nom de l'item ne peut pas être vide.");
+                return;
+            }
+            
+            Item item = inventoryManager.findItemByName(itemName);
+            if (item != null) {
+                int quantity = inputHandler.readIntWithPrompt("Quantité à ajouter: ");
+                if (quantity > 0) {
+                    inventoryManager.addStock(itemName, quantity);
+                    System.out.println("Stock ajouté!");
+                } else {
+                    System.out.println("ERREUR: La quantité doit être positive.");
+                }
+            } else {
+                System.out.println("ERREUR: Item non trouvé: " + itemName);
+            }
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
         }
     }
     
     private void removeStockFromItem() {
-        String itemName = inputHandler.readStringWithPrompt("Nom de l'item: ");
-        Item item = inventoryManager.findItemByName(itemName);
-        
-        if (item != null) {
-            int quantity = inputHandler.readIntWithPrompt("Quantité à retirer: ");
-            boolean success = inventoryManager.removeStock(itemName, quantity);
-            
-            if (success) {
-                System.out.println("Stock retiré!");
-            } else {
-                System.out.println("ERREUR: Pas assez de stock!");
+        try {
+            String itemName = inputHandler.readStringWithPrompt("Nom de l'item: ");
+            if (itemName == null || itemName.trim().isEmpty()) {
+                System.out.println("ERREUR: Le nom de l'item ne peut pas être vide.");
+                return;
             }
-        } else {
-            System.out.println("Item non trouvé");
+            
+            Item item = inventoryManager.findItemByName(itemName);
+            if (item != null) {
+                int quantity = inputHandler.readIntWithPrompt("Quantité à retirer: ");
+                if (quantity > 0) {
+                    boolean success = inventoryManager.removeStock(itemName, quantity);
+                    if (success) {
+                        System.out.println("Stock retiré!");
+                    } else {
+                        System.out.println("ERREUR: Pas assez de stock! Stock actuel: " + item.getStock());
+                    }
+                } else {
+                    System.out.println("ERREUR: La quantité doit être positive.");
+                }
+            } else {
+                System.out.println("ERREUR: Item non trouvé: " + itemName);
+            }
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
         }
     }
     
     private void addNewItem() {
-        String itemName = inputHandler.readStringWithPrompt("Nom: ");
-        double itemPrice = inputHandler.readDoubleWithPrompt("Prix: ");
-        int initialStock = inputHandler.readIntWithPrompt("Stock initial: ");
-        String itemType = inputHandler.readStringWithPrompt("Type (main/snack/drink): ");
-        
-        Item newItem;
-        if (itemType.equals("drink")) {
-            String drinkSize = inputHandler.readStringWithPrompt("Taille: ");
-            newItem = new Item(itemName, itemPrice, initialStock, itemType, drinkSize);
-        } else {
-            newItem = new Item(itemName, itemPrice, initialStock, itemType);
+        try {
+            String itemName = inputHandler.readStringWithPrompt("Nom: ");
+            if (itemName == null || itemName.trim().isEmpty()) {
+                System.out.println("ERREUR: Le nom de l'item ne peut pas être vide.");
+                return;
+            }
+            
+            String priceInput = inputHandler.readStringWithPrompt("Prix: ");
+            double itemPrice;
+            try {
+                itemPrice = Double.parseDouble(priceInput);
+                if (itemPrice < 0) {
+                    System.out.println("ERREUR: Le prix ne peut pas être négatif.");
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("ERREUR: Le prix doit être un nombre valide.");
+                return;
+            }
+            
+            int initialStock = inputHandler.readIntWithPrompt("Stock initial: ");
+            if (initialStock < 0) {
+                System.out.println("ERREUR: Le stock initial ne peut pas être négatif.");
+                return;
+            }
+            
+            String itemType = inputHandler.readStringWithPrompt("Type (main/snack/drink): ");
+            if (!itemType.equals("main") && !itemType.equals("snack") && !itemType.equals("drink")) {
+                System.out.println("ERREUR: Type invalide. Utilisez 'main', 'snack' ou 'drink'.");
+                return;
+            }
+            
+            Item newItem;
+            if (itemType.equals("drink")) {
+                String drinkSize = inputHandler.readStringWithPrompt("Taille: ");
+                if (drinkSize == null || drinkSize.trim().isEmpty()) {
+                    System.out.println("ERREUR: La taille ne peut pas être vide pour une boisson.");
+                    return;
+                }
+                newItem = new Item(itemName, itemPrice, initialStock, itemType, drinkSize);
+            } else {
+                newItem = new Item(itemName, itemPrice, initialStock, itemType);
+            }
+            
+            inventoryManager.addItem(newItem);
+            System.out.println("Item ajouté avec succès!");
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
         }
-        
-        inventoryManager.addItem(newItem);
-        System.out.println("Item ajouté!");
     }
 }

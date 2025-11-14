@@ -1,7 +1,9 @@
+import java.util.InputMismatchException;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 /**
- * Gère les entrées utilisateur de manière centralisée
+ * Gère les entrées utilisateur de manière centralisée avec gestion robuste des erreurs
  */
 public class InputHandler {
     private Scanner scanner;
@@ -10,43 +12,63 @@ public class InputHandler {
         this.scanner = new Scanner(System.in);
     }
     
+    /**
+     * Lit un entier depuis l'entrée standard
+     * @return l'entier lu
+     * @throws IllegalArgumentException si l'entrée n'est pas un entier valide
+     */
     public int readInt() {
-        int value = scanner.nextInt();
-        scanner.nextLine(); 
-        return value;
+        try {
+            int value = scanner.nextInt();
+            scanner.nextLine(); // Consommer le retour à la ligne
+            return value;
+        } catch (InputMismatchException e) {
+            scanner.nextLine(); // Consommer l'entrée invalide
+            throw new IllegalArgumentException("Erreur: Entrée invalide. Un nombre entier est attendu.", e);
+        } catch (NoSuchElementException e) {
+            throw new IllegalArgumentException("Erreur: Aucune entrée disponible.", e);
+        }
     }
     
+    /**
+     * Lit un entier depuis l'entrée standard avec un prompt
+     * @param prompt le message à afficher
+     * @return l'entier lu
+     * @throws IllegalArgumentException si l'entrée n'est pas un entier valide
+     */
     public int readIntWithPrompt(String prompt) {
         System.out.print(prompt);
-        int value = scanner.nextInt();
-        scanner.nextLine(); 
-        return value;
+        return readInt();
     }
     
+    /**
+     * Lit une chaîne de caractères depuis l'entrée standard
+     * @return la chaîne lue
+     * @throws IllegalArgumentException si aucune entrée n'est disponible
+     */
     public String readString() {
-        scanner.nextLine(); 
-        return scanner.nextLine();
+        try {
+            return scanner.nextLine();
+        } catch (NoSuchElementException e) {
+            throw new IllegalArgumentException("Erreur: Aucune entrée disponible.", e);
+        }
     }
     
+    /**
+     * Lit une chaîne de caractères depuis l'entrée standard avec un prompt
+     * @param prompt le message à afficher
+     * @return la chaîne lue
+     * @throws IllegalArgumentException si aucune entrée n'est disponible
+     */
     public String readStringWithPrompt(String prompt) {
         System.out.print(prompt);
-
-        return scanner.nextLine();
-    }
-    
-    public double readDouble() {
-        return scanner.nextDouble();
-    }
-    
-    public double readDoubleWithPrompt(String prompt) {
-        System.out.print(prompt);
-        double value = scanner.nextDouble();
-        scanner.nextLine();
-        return value;
+        return readString();
     }
     
     public void close() {
-        scanner.close();
+        if (scanner != null) {
+            scanner.close();
+        }
     }
 }
 
